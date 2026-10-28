@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | NetGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <div class="auth-icon">🛡️</div>
+        <h1>NetGuard AI</h1>
+        <p class="muted">AI-Powered Network Intrusion Detection</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="notice {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        {% if register_mode %}
+            <h2>Create Account</h2>
+            <form method="POST" action="{{ url_for('register') }}">
+                <label>Username</label>
+                <input name="username" required minlength="3" autocomplete="username">
+                <label>Password (minimum 8 characters)</label>
+                <input name="password" type="password" required minlength="8"
+                       autocomplete="new-password">
+                <button class="button primary full" type="submit">Register</button>
+            </form>
+            <p>Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+        {% else %}
+            <h2>Welcome Back</h2>
+            <form method="POST" action="{{ url_for('login') }}">
+                <label>Username</label>
+                <input name="username" required autocomplete="username">
+                <label>Password</label>
+                <input name="password" type="password" required
+                       autocomplete="current-password">
+                <button class="button primary full" type="submit">Login</button>
+            </form>
+            <p>New user? <a href="{{ url_for('register') }}">Create an account</a></p>
+        {% endif %}
+    </main>
+</body>
+</html>

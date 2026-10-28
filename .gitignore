@@ -1,0 +1,10 @@
+venv/
+.venv/
+.venv_new/
+__pycache__/
+*.py[cod]
+.env
+.vscode/
+dataset/uploads/
+reports/users.json
+reports/predictions.csv

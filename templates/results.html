@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Model Results | NetGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand"><div class="brand-icon">🛡️</div>
+        <div><h1>Model Results</h1><p>AI Intrusion Detection</p></div>
+    </div>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">MODEL EVALUATION</p>
+            <h2>Performance <span>Report</span></h2>
+            <p class="hero-description">
+                Best model: {{ report.best_model }}
+            </p>
+        </div>
+        <div class="shield-art">📊</div>
+    </section>
+
+    <section class="stats-grid">
+        <div class="stat-card"><p>Dataset Rows</p><h3>{{ report.rows }}</h3></div>
+        <div class="stat-card"><p>Features</p><h3>{{ report.features }}</h3></div>
+        <div class="stat-card"><p>Target</p><h3 class="model-name">{{ report.target }}</h3></div>
+        <div class="stat-card"><p>Best Model</p><h3 class="model-name">{{ report.best_model }}</h3></div>
+    </section>
+
+    <section class="panel">
+        <h3>Model Comparison</h3>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Algorithm</th><th>Accuracy</th>
+                    <th>Precision</th><th>Recall</th><th>F1-score</th></tr></thead>
+                <tbody>
+                {% for name, m in report.metrics.items() %}
+                    <tr><td>{{ name }}</td><td>{{ m.accuracy }}%</td>
+                        <td>{{ m.precision }}%</td><td>{{ m.recall }}%</td>
+                        <td>{{ m.f1_score }}%</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Confusion Matrix</h3>
+        <p class="hint">Rows are actual classes; columns are predicted classes.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Actual / Predicted</th>
+                    {% for label in report.classes %}<th>{{ label }}</th>{% endfor %}
+                </tr></thead>
+                <tbody>
+                {% for row in report.confusion_matrix %}
+                    <tr><th>{{ report.classes[loop.index0] }}</th>
+                    {% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

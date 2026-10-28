@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Network Intrusion Detection</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🛡</div>
+        <div>
+            <h1>NetGuard AI</h1>
+            <p>Network Intrusion Detection System</p>
+        </div>
+    </div>
+    <span class="status"><span class="dot"></span> ML ENGINE READY</span>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">ARTIFICIAL INTELLIGENCE • CYBERSECURITY</p>
+            <h2>Intelligent Network<br><span>Threat Detection</span></h2>
+            <p class="hero-description">
+                Train machine learning models, analyze network traffic
+                records, and identify potentially suspicious activity.
+            </p>
+            <a class="button primary" href="{{ url_for('demo') }}">
+                Run Demo Dataset →
+            </a>
+        </div>
+        <div class="shield-art">🛡️</div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="notice {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="section-heading">
+        <div>
+            <h2>Model Training</h2>
+            <p>Upload a labeled CSV dataset to train and evaluate the models.</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <form action="{{ url_for('analyze') }}"
+              method="POST" enctype="multipart/form-data">
+            <label for="dataset">Choose training dataset (.csv)</label>
+            <input type="file" name="dataset" id="dataset"
+                   accept=".csv" required>
+
+            <label for="target_column">Target / label column</label>
+            <input type="text" name="target_column" id="target_column"
+                   placeholder="Example: label (leave blank to use last column)">
+
+            <p class="hint">
+                Your CSV must contain feature columns and a target column
+                containing known class labels, such as Normal and Attack.
+            </p>
+            <button class="button primary" type="submit">
+                Train & Analyze
+            </button>
+        </form>
+    </section>
+
+    {% if report %}
+    <section class="section-heading">
+        <div>
+            <h2>Model Performance</h2>
+            <p>Evaluation on a held-out test split of your uploaded dataset.</p>
+        </div>
+        <span class="pill">Training complete</span>
+    </section>
+
+    <section class="stats-grid">
+        <div class="stat-card">
+            <p>Best Model</p>
+            <h3 class="model-name">{{ report.best_model }}</h3>
+            <small>Selected by weighted F1-score</small>
+        </div>
+        <div class="stat-card">
+            <p>Dataset Rows</p>
+            <h3>{{ report.rows }}</h3>
+            <small>Rows before train/test splitting</small>
+        </div>
+        <div class="stat-card">
+            <p>Input Features</p>
+            <h3>{{ report.features }}</h3>
+            <small>Used by the classifier</small>
+        </div>
+        <div class="stat-card">
+            <p>Target Column</p>
+            <h3 class="model-name">{{ report.target }}</h3>
+            <small>Label to predict</small>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Algorithm Comparison</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>Accuracy</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, metrics in report.metrics.items() %}
+                    <tr>
+                        <td><strong>{{ name }}</strong></td>
+                        <td>{{ metrics.accuracy }}%</td>
+                        <td>{{ metrics.precision }}%</td>
+                        <td>{{ metrics.recall }}%</td>
+                        <td>{{ metrics.f1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Confusion Matrix</h3>
+        <p class="hint">
+            Rows represent actual classes; columns represent predicted classes.
+            The order is shown in the table header.
+        </p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Actual \ Predicted</th>
+                        {% for label in report.classes %}
+                            <th>{{ label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report.confusion_matrix %}
+                    <tr>
+                        <th>{{ report.classes[loop.index0] }}</th>
+                        {% for value in row %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if prediction_ready %}
+    <section class="section-heading">
+        <div>
+            <h2>Prediction Results</h2>
+            <p>
+                {{ prediction_count }} rows analyzed.
+                Showing up to the first 100 rows below.
+            </p>
+        </div>
+        <a class="button primary" href="{{ url_for('download') }}">
+            Download CSV
+        </a>
+    </section>
+
+    <section class="panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in prediction_columns %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in prediction_rows %}
+                    <tr>
+                        {% for col in prediction_columns %}
+                            <td>{{ row[col] }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="section-heading">
+        <div>
+            <h2>Predict New Traffic</h2>
+            <p>Upload unlabeled traffic records using the same feature columns.</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <form action="{{ url_for('predict') }}"
+              method="POST" enctype="multipart/form-data">
+            <label for="prediction_file">Choose prediction CSV</label>
+            <input type="file" name="prediction_file" id="prediction_file"
+                   accept=".csv" required>
+            <p class="hint">
+                Train a model first. Your prediction CSV must contain
+                the same feature columns used during training. Do not
+                include the target column.
+            </p>
+            <button class="button primary" type="submit">
+                Predict Traffic
+            </button>
+        </form>
+    </section>
+
+    {% if preview %}
+    <section class="panel">
+        <h3>Dataset Preview: {{ uploaded_name }}</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in columns %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in preview %}
+                    <tr>
+                        {% for col in columns %}
+                            <td>{{ row[col] }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="disclaimer">
+        <strong>Project demonstration only</strong>
+        <p>
+            The built-in demo uses synthetic data, not actual network traffic.
+            Model predictions are not proof of a real attack. This application
+            analyzes CSV records and does not capture live network packets.
+        </p>
+    </section>
+</main>
+
+<footer>
+    AI-Powered Network Intrusion Detection System · BTech Final-Year Project
+</footer>
+</body>
+</html>

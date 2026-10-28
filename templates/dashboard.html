@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard | NetGuard AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div><h1>NetGuard AI</h1><p>Intrusion Detection Dashboard</p></div>
+    </div>
+    <div class="nav-links">
+        <span>Welcome, {{ username }}</span>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">CYBERSECURITY MONITORING</p>
+            <h2>Network Threat<br><span>Analysis Dashboard</span></h2>
+            <p class="hero-description">
+                Train models and classify network traffic records using AI.
+            </p>
+        </div>
+        <div class="shield-art">🔐</div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="notice {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="section-heading">
+        <div>
+            <h2>Train AI Model</h2>
+            <p>Uses dataset/network_traffic.csv with a target column named label.</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <p>Make sure your dataset is saved in the dataset folder.</p>
+        <button class="button primary" id="trainButton"
+                data-confirm="Train the models using your dataset?"
+                onclick="return confirmAction(this)"
+                form="trainForm">
+            Train and Compare Models
+        </button>
+        <form id="trainForm" method="POST" action="{{ url_for('train') }}"></form>
+    </section>
+
+    {% if report %}
+    <section class="stats-grid">
+        <div class="stat-card">
+            <p>Best Model</p>
+            <h3 class="model-name">{{ report.best_model }}</h3>
+        </div>
+        <div class="stat-card">
+            <p>Dataset Rows</p>
+            <h3>{{ report.rows }}</h3>
+        </div>
+        <div class="stat-card">
+            <p>Input Features</p>
+            <h3>{{ report.features }}</h3>
+        </div>
+        <div class="stat-card">
+            <p>Target Column</p>
+            <h3 class="model-name">{{ report.target }}</h3>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Algorithm Performance</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Model</th><th>Accuracy</th><th>Precision</th>
+                        <th>Recall</th><th>F1-score</th></tr>
+                </thead>
+                <tbody>
+                    {% for name, m in report.metrics.items() %}
+                    <tr>
+                        <td>{{ name }}</td><td>{{ m.accuracy }}%</td>
+                        <td>{{ m.precision }}%</td><td>{{ m.recall }}%</td>
+                        <td>{{ m.f1_score }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a class="button primary" href="{{ url_for('results_page') }}">View Report</a>
+    </section>
+    {% endif %}
+
+    <section class="section-heading">
+        <div>
+            <h2>Predict Network Traffic</h2>
+            <p>Upload CSV records containing the same feature columns as training.</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <form method="POST" action="{{ url_for('predict') }}"
+              enctype="multipart/form-data">
+            <label for="dataset">Prediction CSV</label>
+            <input type="file" id="dataset" name="dataset" accept=".csv" required>
+            <p class="hint">Do not include the target label in the prediction file.</p>
+            <button class="button primary" type="submit">Analyze Traffic</button>
+        </form>
+    </section>
+
+    <section class="disclaimer">
+        <strong>Educational prototype</strong>
+        <p>This application classifies CSV records. It does not capture live network packets.
+           Predictions are not proof of a real cyberattack.</p>
+    </section>
+</main>
+</body>
+</html>

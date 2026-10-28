@@ -1,0 +1,34 @@
+{
+  "best_model": "Random Forest",
+  "metrics": {
+    "Random Forest": {
+      "accuracy": 100.0,
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    },
+    "Decision Tree": {
+      "accuracy": 100.0,
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    }
+  },
+  "rows": 20,
+  "features": 5,
+  "target": "label",
+  "classes": [
+    "Attack",
+    "Normal"
+  ],
+  "confusion_matrix": [
+    [
+      2,
+      0
+    ],
+    [
+      0,
+      3
+    ]
+  ]
+}
